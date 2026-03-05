@@ -1,0 +1,800 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iron Giants — Translation Tool</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-base:      #09090c;
+            --bg-surface:   #111117;
+            --bg-card:      #16161e;
+            --bg-input:     #1c1c27;
+            --border:       #2a2a3a;
+            --border-glow:  #3a3a55;
+            --accent:       #00c8ff;
+            --accent-dim:   #00c8ff22;
+            --accent2:      #ff6b35;
+            --success:      #39d98a;
+            --text-primary: #e8e8f0;
+            --text-secondary:#8888aa;
+            --text-muted:   #4a4a66;
+            --font-display: 'Rajdhani', sans-serif;
+            --font-mono:    'JetBrains Mono', monospace;
+            --font-body:    'Inter', sans-serif;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        html, body {
+            margin: 0; padding: 0;
+            background: var(--bg-base);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            font-size: 14px;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            background-image:
+                    linear-gradient(rgba(0,200,255,0.02) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0,200,255,0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* ── HEADER ── */
+        .app-header {
+            position: relative; z-index: 10;
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 28px;
+            display: flex; align-items: center; gap: 16px;
+        }
+        .app-header::after {
+            content: '';
+            position: absolute; bottom: -2px; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: .5;
+        }
+        .app-logo {
+            font-family: var(--font-display);
+            font-size: 22px; font-weight: 700; letter-spacing: 2px;
+            color: var(--accent); text-transform: uppercase; white-space: nowrap;
+        }
+        .app-logo span { color: var(--text-secondary); font-weight: 400; }
+        .header-badge {
+            background: var(--accent-dim);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            font-size: 10px; font-weight: 600; letter-spacing: 1.5px;
+            padding: 3px 10px; border-radius: 2px; text-transform: uppercase;
+        }
+        .header-stats { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+        .stat-pill { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); }
+        .stat-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); }
+        .stat-dot.green { background: var(--success); box-shadow: 0 0 6px var(--success); }
+
+        .readonly-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            background: rgba(255,107,53,.12); border: 1px solid var(--accent2);
+            color: var(--accent2); font-size: 10px; font-weight: 600; letter-spacing: 1.5px;
+            padding: 3px 10px; border-radius: 2px; text-transform: uppercase;
+        }
+
+        /* ── LAYOUT ── */
+        .app-body {
+            position: relative; z-index: 1;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            height: calc(100vh - 57px);
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            background: var(--bg-surface);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            display: flex; flex-direction: column;
+        }
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: var(--border-glow); border-radius: 2px; }
+
+        .sidebar-section { padding: 16px; border-bottom: 1px solid var(--border); }
+        .sidebar-label {
+            font-family: var(--font-display);
+            font-size: 10px; font-weight: 600; letter-spacing: 2px;
+            color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px;
+        }
+
+        .file-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 10px; margin-bottom: 2px;
+            border-radius: 4px; cursor: pointer;
+            border: 1px solid transparent;
+            transition: all .15s ease; color: var(--text-secondary);
+        }
+        .file-item:hover { background: var(--bg-card); border-color: var(--border); color: var(--text-primary); }
+        .file-item.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+        .file-item i { font-size: 13px; flex-shrink: 0; }
+        .file-item .file-name { font-size: 12px; font-family: var(--font-mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .file-item .file-count { margin-left: auto; font-size: 10px; flex-shrink: 0; color: var(--text-muted); }
+        .file-item .file-count.complete { color: var(--success); }
+        .file-item .file-count.partial  { color: var(--accent); }
+        .file-item .file-count.empty    { color: var(--text-muted); }
+        .file-item .ro-icon { margin-left: auto; font-size: 10px; color: var(--accent2); opacity: .7; flex-shrink: 0; }
+
+        .progress-wrap { margin-top: 8px; }
+        .progress-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-secondary); margin-bottom: 5px; }
+        .progress-label strong { color: var(--success); font-family: var(--font-mono); }
+        .progress-track { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background: var(--success); border-radius: 2px; transition: width .4s ease; box-shadow: 0 0 8px var(--success); }
+
+        .ig-btn {
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 8px 14px; border-radius: 3px; border: none; cursor: pointer;
+            font-family: var(--font-display); font-size: 13px; font-weight: 600;
+            letter-spacing: .5px; text-transform: uppercase;
+            transition: all .15s ease; white-space: nowrap;
+        }
+        .ig-btn-secondary { background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border); }
+        .ig-btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+        .ig-btn-success { background: var(--success); color: #000; }
+        .ig-btn-success:hover { background: #5fffaa; box-shadow: 0 0 16px var(--success); }
+        .ig-btn i { font-size: 14px; }
+        .ig-btn:disabled { opacity: .4; cursor: not-allowed; pointer-events: none; }
+
+        /* ── MAIN ── */
+        .main-area { display: flex; flex-direction: column; overflow: hidden; }
+
+        .toolbar {
+            background: var(--bg-surface); border-bottom: 1px solid var(--border);
+            padding: 10px 20px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+        }
+        .search-wrap { position: relative; flex: 1; min-width: 160px; max-width: 300px; }
+        .search-wrap i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 13px; pointer-events: none; }
+        .search-input {
+            width: 100%; background: var(--bg-input); border: 1px solid var(--border);
+            color: var(--text-primary); border-radius: 3px; padding: 7px 10px 7px 30px;
+            font-size: 12px; outline: none; transition: border-color .15s;
+        }
+        .search-input:focus { border-color: var(--accent); }
+        .search-input::placeholder { color: var(--text-muted); }
+
+        .filter-btn {
+            padding: 6px 12px; font-size: 11px; font-family: var(--font-display);
+            font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+            background: transparent; border: 1px solid var(--border);
+            color: var(--text-secondary); border-radius: 3px; cursor: pointer; transition: all .15s;
+        }
+        .filter-btn.active, .filter-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+        .toolbar-spacer { flex: 1; }
+
+        .table-wrap { flex: 1; overflow-y: auto; }
+        .table-wrap::-webkit-scrollbar { width: 6px; }
+        .table-wrap::-webkit-scrollbar-thumb { background: var(--border-glow); border-radius: 3px; }
+
+        .trans-table { width: 100%; border-collapse: collapse; }
+        .trans-table thead { position: sticky; top: 0; z-index: 5; background: var(--bg-card); }
+        .trans-table th {
+            padding: 10px 16px; font-size: 10px; font-weight: 600; letter-spacing: 2px;
+            color: var(--text-muted); text-transform: uppercase;
+            border-bottom: 1px solid var(--border); text-align: left;
+        }
+        .trans-row { border-bottom: 1px solid var(--border); transition: background .1s; }
+        .trans-row:hover { background: var(--bg-card); }
+        .trans-row.translated .row-status { color: var(--success); }
+        .trans-row.untranslated .row-status { color: var(--text-muted); }
+        .trans-row td { padding: 10px 16px; vertical-align: top; }
+
+        .col-num { width: 48px; font-family: var(--font-mono); font-size: 11px; }
+        .col-key { width: 220px; }
+        .key-tag {
+            display: inline-block; background: var(--bg-input); border: 1px solid var(--border);
+            border-radius: 2px; padding: 3px 8px; font-family: var(--font-mono); font-size: 11px;
+            color: var(--accent); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .col-original { color: var(--text-secondary); font-size: 13px; width: 30%; }
+        .col-translation { width: auto; }
+
+        .trans-input {
+            width: 100%; background: var(--bg-input); border: 1px solid var(--border);
+            color: var(--text-primary); border-radius: 3px; padding: 6px 10px;
+            font-size: 13px; outline: none; transition: border-color .15s, background .15s;
+            font-family: var(--font-body);
+        }
+        .trans-input:focus { border-color: var(--accent); background: #1c1c2e; }
+        .trans-input.has-value { border-color: var(--success); }
+
+        /* Read-only state */
+        .trans-input[readonly] {
+            background: var(--bg-surface);
+            color: var(--text-muted);
+            border-color: var(--border);
+            cursor: not-allowed;
+            opacity: .6;
+        }
+        .trans-input[readonly]:focus {
+            border-color: var(--border);
+            background: var(--bg-surface);
+        }
+
+        /* Read-only banner shown in toolbar */
+        .ro-notice {
+            display: flex; align-items: center; gap: 8px;
+            background: rgba(255,107,53,.08);
+            border: 1px solid rgba(255,107,53,.35);
+            border-radius: 3px; padding: 5px 12px;
+            font-size: 11px; color: var(--accent2); font-weight: 500;
+        }
+        .ro-notice i { font-size: 13px; }
+
+        .empty-state {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100%; gap: 12px; color: var(--text-muted);
+        }
+        .empty-state i { font-size: 48px; opacity: .3; }
+        .empty-state p { font-size: 14px; margin: 0; }
+        .empty-state small { font-size: 12px; opacity: .6; }
+
+        .toast-area { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+        .ig-toast {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-left: 3px solid var(--accent); padding: 10px 16px; border-radius: 4px;
+            font-size: 13px; min-width: 240px; box-shadow: 0 4px 24px rgba(0,0,0,.5);
+            animation: toastIn .2s ease;
+        }
+        .ig-toast.success { border-left-color: var(--success); }
+        .ig-toast.error   { border-left-color: var(--accent2); }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        * { scrollbar-width: thin; scrollbar-color: var(--border-glow) transparent; }
+
+        @media (max-width: 768px) {
+            .app-body { grid-template-columns: 1fr; }
+            .sidebar  { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="app-header">
+    <div class="app-logo">Iron Giants <span>/ Translation Tool</span></div>
+    <div class="header-badge">v1.0</div>
+    <div class="header-stats">
+        <div id="readonlyBadge" class="readonly-badge" style="display:none;">
+            <i class="bi bi-lock-fill"></i> Read-Only
+        </div>
+        <div class="stat-pill">
+            <div class="stat-dot" id="statusDot"></div>
+            <span id="statusText">No file loaded</span>
+        </div>
+    </div>
+</header>
+
+<!-- BODY -->
+<div class="app-body">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <div class="sidebar-section">
+            <div class="sidebar-label"><i class="bi bi-folder2-open"></i> &nbsp;Lang Files</div>
+            <div id="fileList">
+                <div style="color:var(--text-muted);font-size:12px;padding:6px 2px;">
+                    Loading files from <code style="color:var(--accent)">LangFiles/</code>…
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-label"><i class="bi bi-bar-chart"></i> &nbsp;Progress</div>
+            <div class="progress-wrap">
+                <div class="progress-label">
+                    <span>Translated</span>
+                    <strong id="progressLabel">0 / 0</strong>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-bar-fill" id="progressBar" style="width:0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-section" style="margin-top:auto;">
+            <div class="sidebar-label"><i class="bi bi-lightning"></i> &nbsp;Actions</div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+                <button class="ig-btn ig-btn-success" id="btnExport" style="width:100%">
+                    <i class="bi bi-download"></i> Export .ini File
+                </button>
+                <button class="ig-btn ig-btn-secondary" id="btnClear" style="width:100%">
+                    <i class="bi bi-arrow-counterclockwise"></i> Clear Translations
+                </button>
+            </div>
+        </div>
+
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main-area">
+
+        <div class="toolbar">
+            <div class="search-wrap">
+                <i class="bi bi-search"></i>
+                <input class="search-input" id="searchInput" placeholder="Search keys or strings…" />
+            </div>
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="untranslated">Untranslated</button>
+            <button class="filter-btn" data-filter="translated">Translated</button>
+            <div id="roNotice" class="ro-notice" style="display:none;">
+                <i class="bi bi-lock-fill"></i> Source file — editing disabled
+            </div>
+            <div class="toolbar-spacer"></div>
+            <span style="font-size:11px;color:var(--text-muted);" id="rowCount">—</span>
+        </div>
+
+        <div class="table-wrap" id="tableWrap">
+            <div class="empty-state">
+                <i class="bi bi-file-earmark-code"></i>
+                <p>Select a language file to begin</p>
+                <small>Files are loaded from the <code style="color:var(--accent)">LangFiles/</code> folder</small>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- TOAST AREA -->
+<div class="toast-area" id="toastArea"></div>
+
+<!-- jQuery + Bootstrap JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // ══════════════════════════════════════════════════════════════════
+    // CONFIGURATION — add your INI filenames here, place files in LangFiles/
+    // Files matching READONLY_FILES will be view-only (no editing allowed).
+    // ══════════════════════════════════════════════════════════════════
+    const LANG_FILES = [
+        "en_US.ini",
+        "hu_HU.ini",
+        "ja_JP.ini",
+        "nl_NL.ini",
+        "pl_PL.ini",
+        "cz_CZ.ini",
+        "ru_RU.ini"
+    ];
+
+    // Files whose translations cannot be edited
+    const READONLY_FILES = ["en_US.ini"];
+
+    // The source/reference language file
+    const ENGLISH_SOURCE = "en_US.ini";
+
+    // ══════════════════════════════════════════════════════════════════
+    // HELPERS — translation validity
+    // Returns true only if the entry has a translation AND it differs
+    // from the English source value for the same key.
+    // ══════════════════════════════════════════════════════════════════
+    function isEffectivelyTranslated(e) {
+        if (!e.translated) return false;
+        const engVal = state.englishMap[e.key];
+        if (engVal !== undefined && e.translated === engVal) return false;
+        return true;
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // STATE
+    // ══════════════════════════════════════════════════════════════════
+    let state = {
+        activeFile: null,
+        sections:   [],
+        entries:    [],
+        meta:       {},
+        filter:     "all",
+        search:     "",
+        isReadonly: false,
+        englishMap: {},   // key → English value, used to detect untranslated entries
+    };
+
+    // ══════════════════════════════════════════════════════════════════
+    // INI PARSER
+    // ══════════════════════════════════════════════════════════════════
+    function parseIni(text) {
+        const sections = [];
+        let currentSection = { name: "General", entries: [] };
+        sections.push(currentSection);
+
+        text.split(/\r?\n/).forEach(line => {
+            const trimmed = line.trim();
+
+            // Preserve blank lines as spacer markers inside sections
+            if (!trimmed) {
+                currentSection.entries.push({ spacer: true });
+                return;
+            }
+
+            if (trimmed.startsWith(";") || trimmed.startsWith("#")) return;
+
+            const sectionMatch = trimmed.match(/^\[(.+)\]$/);
+            if (sectionMatch) {
+                currentSection = { name: sectionMatch[1], entries: [] };
+                sections.push(currentSection);
+                return;
+            }
+
+            const eqIdx = trimmed.indexOf("=");
+            if (eqIdx === -1) return;
+
+            const key = trimmed.slice(0, eqIdx).trim();
+            let val   = trimmed.slice(eqIdx + 1).trim();
+            if ((val.startsWith('"') && val.endsWith('"')) ||
+                (val.startsWith("'") && val.endsWith("'"))) {
+                val = val.slice(1, -1);
+            }
+            currentSection.entries.push({ key, value: val });
+        });
+
+        const flat = [];
+        let meta = {};
+        sections.forEach(sec => {
+            if (sec.name === "Meta") {
+                sec.entries.forEach(e => { if (!e.spacer) meta[e.key] = e.value; });
+                return;
+            }
+            sec.entries.forEach(e => {
+                if (e.spacer) {
+                    flat.push({ spacer: true, section: sec.name });
+                } else {
+                    flat.push({ key: e.key, value: e.value, section: sec.name, translated: e.key !== e.value ? e.value : "" });
+                }
+            });
+        });
+
+        return { sections, flat, meta };
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // INI SERIALIZER
+    // ══════════════════════════════════════════════════════════════════
+    function serializeIni() {
+        const m = state.meta;
+        let out = `[Meta]\n`;
+        if (m.id)   out += `id="${m.id}"\n`;
+        if (m.name) out += `name="${m.name}"\n`;
+        if (m.flag) out += `flag="${m.flag}"\n`;
+        out += `\n[Translations]\n`;
+        state.entries.forEach(e => {
+            if (e.spacer) { out += `\n`; return; }
+            out += `${e.key}="${e.translated || e.value}"\n`;
+        });
+        return out;
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // FILE LIST
+    // ══════════════════════════════════════════════════════════════════
+    function renderFileList() {
+        const $list = $("#fileList").empty();
+        if (!LANG_FILES.length) {
+            $list.html('<div style="color:var(--text-muted);font-size:12px;">No files configured.<br>Edit <code>LANG_FILES</code> in the script.</div>');
+            return;
+        }
+        LANG_FILES.forEach(fname => {
+            const isRo = READONLY_FILES.includes(fname);
+            const $item = $(`
+                <div class="file-item" data-file="${fname}">
+                    <i class="bi bi-file-code"></i>
+                    <span class="file-name">${fname}</span>
+                    ${isRo
+                ? `<span class="ro-icon" title="Read-only source file"><i class="bi bi-lock-fill"></i></span>`
+                : `<span class="file-count" data-file="${fname}"><i class="bi bi-arrow-repeat" style="font-size:10px;opacity:.5;"></i></span>`
+            }
+                </div>
+            `);
+            $item.on("click", () => loadFile(fname));
+            $list.append($item);
+        });
+
+        // Pre-load non-readonly files to show translation counts
+        LANG_FILES.forEach(async fname => {
+            if (READONLY_FILES.includes(fname)) return;
+            try {
+                // Fetch English map for accurate count
+                let engMap = {};
+                try {
+                    const engRes = await fetch(`LangFiles/${ENGLISH_SOURCE}`);
+                    if (engRes.ok) {
+                        const { flat: engFlat } = parseIni(await engRes.text());
+                        engFlat.forEach(e => { if (!e.spacer) engMap[e.key] = e.value; });
+                    }
+                } catch(_) {}
+
+                const res = await fetch(`LangFiles/${fname}`);
+                if (!res.ok) throw new Error();
+                const text = await res.text();
+                const { flat } = parseIni(text);
+                const total = flat.filter(e => !e.spacer).length;
+                const done  = flat.filter(e => {
+                    if (e.spacer) return false;
+                    if (!e.translated) return false;
+                    const engVal = engMap[e.key];
+                    if (engVal !== undefined && e.translated === engVal) return false;
+                    return true;
+                }).length;
+                const cls = done === total && total > 0 ? "complete" : done > 0 ? "partial" : "empty";
+                $(`.file-count[data-file="${fname}"]`)
+                    .text(`${done}/${total}`)
+                    .removeClass("complete partial empty")
+                    .addClass(cls);
+            } catch(e) {
+                $(`.file-count[data-file="${fname}"]`).text("err").css("color","var(--accent2)");
+            }
+        });
+    }
+
+    async function loadFile(fname) {
+        $(".file-item").removeClass("active");
+        $(`.file-item[data-file="${fname}"]`).addClass("active");
+        $("#statusText").text("Loading…");
+        $("#statusDot").removeClass("green");
+
+        try {
+            const res = await fetch(`LangFiles/${fname}`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const text = await res.text();
+            const parsed = parseIni(text);
+            state.activeFile = fname;
+            state.sections   = parsed.sections;
+            state.entries    = parsed.flat;
+            state.meta       = parsed.meta;
+            state.isReadonly = READONLY_FILES.includes(fname);
+
+            // Load English reference map for untranslated detection
+            state.englishMap = {};
+            if (!state.isReadonly && fname !== ENGLISH_SOURCE) {
+                try {
+                    const engRes = await fetch(`LangFiles/${ENGLISH_SOURCE}`);
+                    if (engRes.ok) {
+                        const engText = await engRes.text();
+                        const { flat: engFlat } = parseIni(engText);
+                        engFlat.forEach(e => { if (!e.spacer) state.englishMap[e.key] = e.value; });
+                    }
+                } catch(_) { /* silently ignore if English file unavailable */ }
+            }
+
+            // Show/hide read-only UI elements
+            if (state.isReadonly) {
+                $("#readonlyBadge").show();
+                $("#roNotice").show();
+                $("#btnExport").prop("disabled", true);
+                $("#btnClear").prop("disabled", true);
+                $(".filter-btn[data-filter='untranslated']").hide();
+                $(".filter-btn[data-filter='translated']").hide();
+            } else {
+                $("#readonlyBadge").hide();
+                $("#roNotice").hide();
+                $("#btnExport").prop("disabled", false);
+                $("#btnClear").prop("disabled", false);
+                $(".filter-btn[data-filter='untranslated']").show();
+                $(".filter-btn[data-filter='translated']").show();
+            }
+
+            const doneNow  = state.entries.filter(e => !e.spacer && isEffectivelyTranslated(e)).length;
+            const totalNow = state.entries.filter(e => !e.spacer).length;
+            if (!state.isReadonly) {
+                const cls = doneNow === totalNow && totalNow > 0 ? "complete" : doneNow > 0 ? "partial" : "empty";
+                $(`.file-count[data-file="${fname}"]`).text(`${doneNow}/${totalNow}`).removeClass("complete partial empty").addClass(cls);
+            }
+
+            renderTable();
+            updateProgress();
+            setStatus(`${fname} loaded${state.isReadonly ? " (read-only)" : ""}`, true);
+            toast(`Loaded <strong>${fname}</strong> — ${state.entries.filter(e => !e.spacer).length} strings${state.isReadonly ? " · <span style='color:var(--accent2)'>read-only</span>" : ""}`, state.isReadonly ? "info" : "success");
+        } catch(err) {
+            toast(`Failed to load <strong>${fname}</strong>: ${err.message}`, "error");
+            setStatus("Load error", false);
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // TABLE RENDER
+    // ══════════════════════════════════════════════════════════════════
+    function getVisible() {
+        return state.entries.filter(e => {
+            if (e.spacer) return false;
+            if (state.filter === "translated"   && !isEffectivelyTranslated(e)) return false;
+            if (state.filter === "untranslated" &&  isEffectivelyTranslated(e)) return false;
+            if (state.search) {
+                const q = state.search.toLowerCase();
+                if (!e.key.toLowerCase().includes(q) && !e.value.toLowerCase().includes(q)) return false;
+            }
+            return true;
+        });
+    }
+
+    function renderTable() {
+        const $wrap = $("#tableWrap").empty();
+        const visible = getVisible();
+        $("#rowCount").text(`${visible.length} / ${state.entries.length} strings`);
+
+        if (!state.entries.length) {
+            $wrap.html('<div class="empty-state"><i class="bi bi-file-earmark-code"></i><p>Select a language file to begin</p></div>');
+            return;
+        }
+        if (!visible.length) {
+            $wrap.html('<div class="empty-state"><i class="bi bi-funnel"></i><p>No strings match your filter</p></div>');
+            return;
+        }
+
+        const ro = state.isReadonly;
+        let lastSection = null;
+        const $table = $(`<table class="trans-table"><thead><tr><th>#</th><th>Key</th><th>${ro ? "Value" : "Original"}</th>${ro ? "" : "<th>Translation</th>"}</tr></thead></table>`);
+        const $body  = $('<tbody>');
+        let rowNum = 1;
+
+        visible.forEach(e => {
+            if (e.section !== lastSection) {
+                const colspan = ro ? 3 : 4;
+                $body.append($(`<tr style="background:var(--bg-surface)"><td colspan="${colspan}" style="padding:6px 16px;font-size:10px;font-family:var(--font-display);letter-spacing:2px;color:var(--text-muted);text-transform:uppercase;border-bottom:1px solid var(--border);">[${e.section}]</td></tr>`));
+                lastSection = e.section;
+            }
+
+            const entryIdx = state.entries.indexOf(e);
+            const $row = $(`<tr class="trans-row ${isEffectivelyTranslated(e) ? 'translated' : 'untranslated'}" data-idx="${entryIdx}"></tr>`);
+
+            if (ro) {
+                // Read-only: show key + value only (no translation column)
+                $row.html(`
+                    <td class="col-num row-status">${rowNum++}</td>
+                    <td class="col-key"><span class="key-tag" title="${e.key}">${e.key}</span></td>
+                    <td class="col-original" colspan="2" style="color:var(--text-primary);">${escHtml(e.value)}</td>
+                `);
+            } else {
+                const effTranslated = isEffectivelyTranslated(e);
+                const sameAsEng     = e.translated && !effTranslated && state.englishMap[e.key] !== undefined && e.translated === state.englishMap[e.key];
+                const inputClass    = effTranslated ? 'has-value' : sameAsEng ? 'same-as-english' : '';
+                $row.html(`
+                    <td class="col-num row-status">${rowNum++}</td>
+                    <td class="col-key"><span class="key-tag" title="${e.key}">${e.key}</span></td>
+                    <td class="col-original">${escHtml(e.value)}</td>
+                    <td class="col-translation">
+                        <input class="trans-input ${inputClass}"
+                               type="text"
+                               value="${escHtml(e.translated)}"
+                               placeholder="${escHtml(e.value)}"
+                               data-idx="${entryIdx}" />
+                    </td>
+                `);
+            }
+
+            $body.append($row);
+        });
+
+        $table.append($body);
+        $wrap.append($table);
+
+        if (!ro) {
+            $wrap.on("input", ".trans-input", function() {
+                const idx = +$(this).data("idx");
+                const val = $(this).val();
+                state.entries[idx].translated = val;
+                const e    = state.entries[idx];
+                const eff  = isEffectivelyTranslated(e);
+                const sameAsEng = val && !eff && state.englishMap[e.key] !== undefined && val === state.englishMap[e.key];
+                const $row = $(this).closest("tr");
+
+                $(this).removeClass("has-value same-as-english");
+                if (eff)       $(this).addClass("has-value");
+                else if (sameAsEng) $(this).addClass("same-as-english");
+
+                if (eff) {
+                    $row.removeClass("untranslated").addClass("translated");
+                    $row.find(".row-status").css("color", "var(--success)");
+                } else {
+                    $row.removeClass("translated").addClass("untranslated");
+                    $row.find(".row-status").css("color", "var(--text-muted)");
+                }
+                updateProgress();
+            });
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // PROGRESS
+    // ══════════════════════════════════════════════════════════════════
+    function updateProgress() {
+        const entries = state.entries.filter(e => !e.spacer);
+        const total = entries.length;
+        const done  = entries.filter(e => isEffectivelyTranslated(e)).length;
+        const pct   = total ? Math.round((done / total) * 100) : 0;
+        $("#progressLabel").text(`${done} / ${total}`);
+        $("#progressBar").css("width", pct + "%");
+
+        if (state.activeFile && !state.isReadonly) {
+            const cls = done === total && total > 0 ? "complete" : done > 0 ? "partial" : "empty";
+            $(`.file-count[data-file="${state.activeFile}"]`).text(`${done}/${total}`).removeClass("complete partial empty").addClass(cls);
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // EXPORT
+    // ══════════════════════════════════════════════════════════════════
+    function exportIni() {
+        if (!state.entries.length) { toast("Nothing to export — load a file first", "error"); return; }
+        if (state.isReadonly) { toast("This file is read-only and cannot be exported", "error"); return; }
+        const code = state.activeFile ? state.activeFile.replace(".ini", "") : "xx_XX";
+        const content = serializeIni();
+        const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+        const url  = URL.createObjectURL(blob);
+        const $a   = $('<a>').attr({ href: url, download: `${code}.ini` }).appendTo("body");
+        $a[0].click();
+        $a.remove();
+        URL.revokeObjectURL(url);
+        toast(`Exported <strong>${code}.ini</strong>`, "success");
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // HELPERS
+    // ══════════════════════════════════════════════════════════════════
+    function escHtml(str) {
+        return String(str)
+            .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+            .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+    function setStatus(msg, ok) {
+        $("#statusText").text(msg);
+        ok ? $("#statusDot").addClass("green") : $("#statusDot").removeClass("green");
+    }
+    function toast(html, type = "info") {
+        const $t = $(`<div class="ig-toast ${type}">${html}</div>`).appendTo("#toastArea");
+        setTimeout(() => $t.fadeOut(300, function(){ $(this).remove(); }), 3500);
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // EVENTS
+    // ══════════════════════════════════════════════════════════════════
+    $(function() {
+        renderFileList();
+
+        $("#searchInput").on("input", function() {
+            state.search = $(this).val().trim().toLowerCase();
+            renderTable();
+        });
+
+        $(".filter-btn").on("click", function() {
+            $(".filter-btn").removeClass("active");
+            $(this).addClass("active");
+            state.filter = $(this).data("filter");
+            renderTable();
+        });
+
+        $("#btnExport").on("click", exportIni);
+
+        $("#btnClear").on("click", function() {
+            if (!state.entries.length) return;
+            if (state.isReadonly) return;
+            if (!confirm("Clear all translations?")) return;
+            state.entries.forEach(e => e.translated = "");
+            renderTable();
+            updateProgress();
+            toast("Translations cleared", "info");
+        });
+    });
+</script>
+</body>
+</html>
