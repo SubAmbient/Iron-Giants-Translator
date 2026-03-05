@@ -2,34 +2,33 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>Iron Giants — Translation Tool</title>
 
-    <!-- Bootstrap 5 -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --bg-base:      #09090c;
-            --bg-surface:   #111117;
-            --bg-card:      #16161e;
-            --bg-input:     #1c1c27;
-            --border:       #2a2a3a;
-            --border-glow:  #3a3a55;
-            --accent:       #00c8ff;
-            --accent-dim:   #00c8ff22;
-            --accent2:      #ff6b35;
-            --success:      #39d98a;
-            --text-primary: #e8e8f0;
+            --bg-base:       #09090c;
+            --bg-surface:    #111117;
+            --bg-card:       #16161e;
+            --bg-input:      #1c1c27;
+            --border:        #2a2a3a;
+            --border-glow:   #3a3a55;
+            --accent:        #00c8ff;
+            --accent-dim:    #00c8ff22;
+            --accent2:       #ff6b35;
+            --success:       #39d98a;
+            --text-primary:  #e8e8f0;
             --text-secondary:#8888aa;
-            --text-muted:   #4a4a66;
-            --font-display: 'Rajdhani', sans-serif;
-            --font-mono:    'JetBrains Mono', monospace;
-            --font-body:    'Inter', sans-serif;
+            --text-muted:    #4a4a66;
+            --font-display:  'Rajdhani', sans-serif;
+            --font-mono:     'JetBrains Mono', monospace;
+            --font-body:     'Inter', sans-serif;
+            --header-h:      57px;
+            --mobile-bar-h:  56px;
         }
 
         *, *::before, *::after { box-sizing: border-box; }
@@ -41,6 +40,7 @@
             font-family: var(--font-body);
             font-size: 14px;
             min-height: 100vh;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body::before {
@@ -54,50 +54,63 @@
 
         /* ── HEADER ── */
         .app-header {
-            position: relative; z-index: 10;
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
             background: var(--bg-surface);
             border-bottom: 1px solid var(--border);
-            padding: 14px 28px;
-            display: flex; align-items: center; gap: 16px;
+            padding: 0 16px;
+            height: var(--header-h);
+            display: flex; align-items: center; gap: 12px;
         }
         .app-header::after {
             content: '';
-            position: absolute; bottom: -2px; left: 0; right: 0;
-            height: 1px;
+            position: absolute; bottom: -2px; left: 0; right: 0; height: 1px;
             background: linear-gradient(90deg, transparent, var(--accent), transparent);
             opacity: .5;
         }
         .app-logo {
             font-family: var(--font-display);
-            font-size: 22px; font-weight: 700; letter-spacing: 2px;
+            font-size: 20px; font-weight: 700; letter-spacing: 2px;
             color: var(--accent); text-transform: uppercase; white-space: nowrap;
         }
         .app-logo span { color: var(--text-secondary); font-weight: 400; }
+
         .header-badge {
-            background: var(--accent-dim);
-            border: 1px solid var(--accent);
-            color: var(--accent);
-            font-size: 10px; font-weight: 600; letter-spacing: 1.5px;
-            padding: 3px 10px; border-radius: 2px; text-transform: uppercase;
+            background: var(--accent-dim); border: 1px solid var(--accent);
+            color: var(--accent); font-size: 10px; font-weight: 600;
+            letter-spacing: 1.5px; padding: 3px 10px; border-radius: 2px;
+            text-transform: uppercase; flex-shrink: 0;
         }
         .header-stats { margin-left: auto; display: flex; align-items: center; gap: 10px; }
         .stat-pill { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); }
-        .stat-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); }
+        .stat-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); flex-shrink: 0; }
         .stat-dot.green { background: var(--success); box-shadow: 0 0 6px var(--success); }
 
         .readonly-badge {
             display: inline-flex; align-items: center; gap: 5px;
             background: rgba(255,107,53,.12); border: 1px solid var(--accent2);
-            color: var(--accent2); font-size: 10px; font-weight: 600; letter-spacing: 1.5px;
-            padding: 3px 10px; border-radius: 2px; text-transform: uppercase;
+            color: var(--accent2); font-size: 10px; font-weight: 600;
+            letter-spacing: 1.5px; padding: 3px 10px; border-radius: 2px;
+            text-transform: uppercase; flex-shrink: 0;
         }
+
+        /* Hamburger — mobile only */
+        .hamburger-btn {
+            display: none;
+            background: none; border: 1px solid var(--border);
+            color: var(--text-secondary); border-radius: 3px;
+            width: 36px; height: 36px; align-items: center; justify-content: center;
+            font-size: 18px; cursor: pointer; flex-shrink: 0;
+            transition: border-color .15s, color .15s;
+        }
+        .hamburger-btn:hover { border-color: var(--accent); color: var(--accent); }
 
         /* ── LAYOUT ── */
         .app-body {
             position: relative; z-index: 1;
             display: grid;
             grid-template-columns: 280px 1fr;
-            height: calc(100vh - 57px);
+            height: calc(100vh - var(--header-h));
+            margin-top: var(--header-h);
         }
 
         /* ── SIDEBAR ── */
@@ -110,6 +123,7 @@
         .sidebar::-webkit-scrollbar { width: 4px; }
         .sidebar::-webkit-scrollbar-thumb { background: var(--border-glow); border-radius: 2px; }
 
+
         .sidebar-section { padding: 16px; border-bottom: 1px solid var(--border); }
         .sidebar-label {
             font-family: var(--font-display);
@@ -117,14 +131,29 @@
             color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px;
         }
 
+        /* Sidebar close btn — mobile only */
+        .sidebar-close {
+            display: none;
+            background: none; border: none; cursor: pointer;
+            color: var(--text-muted); font-size: 20px; padding: 0;
+            line-height: 1; margin-left: auto;
+            transition: color .15s;
+        }
+        .sidebar-close:hover { color: var(--text-primary); }
+
+        .sidebar-header-row {
+            display: flex; align-items: center;
+        }
+
         .file-item {
             display: flex; align-items: center; gap: 10px;
-            padding: 9px 10px; margin-bottom: 2px;
+            padding: 11px 10px; margin-bottom: 2px;
             border-radius: 4px; cursor: pointer;
             border: 1px solid transparent;
             transition: all .15s ease; color: var(--text-secondary);
+            min-height: 44px; /* Touch target */
         }
-        .file-item:hover { background: var(--bg-card); border-color: var(--border); color: var(--text-primary); }
+        .file-item:hover  { background: var(--bg-card); border-color: var(--border); color: var(--text-primary); }
         .file-item.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
         .file-item i { font-size: 13px; flex-shrink: 0; }
         .file-item .file-name { font-size: 12px; font-family: var(--font-mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -141,11 +170,12 @@
         .progress-bar-fill { height: 100%; background: var(--success); border-radius: 2px; transition: width .4s ease; box-shadow: 0 0 8px var(--success); }
 
         .ig-btn {
-            display: inline-flex; align-items: center; gap: 7px;
-            padding: 8px 14px; border-radius: 3px; border: none; cursor: pointer;
+            display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+            padding: 10px 14px; border-radius: 3px; border: none; cursor: pointer;
             font-family: var(--font-display); font-size: 13px; font-weight: 600;
             letter-spacing: .5px; text-transform: uppercase;
             transition: all .15s ease; white-space: nowrap;
+            min-height: 44px; /* Touch target */
         }
         .ig-btn-secondary { background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border); }
         .ig-btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
@@ -159,27 +189,42 @@
 
         .toolbar {
             background: var(--bg-surface); border-bottom: 1px solid var(--border);
-            padding: 10px 20px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+            padding: 10px 16px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
         }
-        .search-wrap { position: relative; flex: 1; min-width: 160px; max-width: 300px; }
+        .search-wrap { position: relative; flex: 1; min-width: 140px; }
         .search-wrap i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 13px; pointer-events: none; }
         .search-input {
             width: 100%; background: var(--bg-input); border: 1px solid var(--border);
-            color: var(--text-primary); border-radius: 3px; padding: 7px 10px 7px 30px;
-            font-size: 12px; outline: none; transition: border-color .15s;
+            color: var(--text-primary); border-radius: 3px; padding: 8px 10px 8px 30px;
+            font-size: 14px; outline: none; transition: border-color .15s;
+            -webkit-appearance: none; /* iOS fix */
+            min-height: 40px;
         }
         .search-input:focus { border-color: var(--accent); }
         .search-input::placeholder { color: var(--text-muted); }
 
+        .filter-group { display: flex; gap: 4px; flex-shrink: 0; }
         .filter-btn {
-            padding: 6px 12px; font-size: 11px; font-family: var(--font-display);
+            padding: 7px 10px; font-size: 11px; font-family: var(--font-display);
             font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
             background: transparent; border: 1px solid var(--border);
-            color: var(--text-secondary); border-radius: 3px; cursor: pointer; transition: all .15s;
+            color: var(--text-secondary); border-radius: 3px; cursor: pointer;
+            transition: all .15s; min-height: 40px; white-space: nowrap;
         }
         .filter-btn.active, .filter-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
-        .toolbar-spacer { flex: 1; }
+        .toolbar-spacer { flex: 1; min-width: 0; }
 
+        .ro-notice {
+            display: flex; align-items: center; gap: 8px;
+            background: rgba(255,107,53,.08); border: 1px solid rgba(255,107,53,.35);
+            border-radius: 3px; padding: 6px 12px;
+            font-size: 11px; color: var(--accent2); font-weight: 500;
+        }
+        .ro-notice i { font-size: 13px; flex-shrink: 0; }
+
+        .row-count-label { font-size: 11px; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
+
+        /* ── TABLE ── */
         .table-wrap { flex: 1; overflow-y: auto; }
         .table-wrap::-webkit-scrollbar { width: 6px; }
         .table-wrap::-webkit-scrollbar-thumb { background: var(--border-glow); border-radius: 3px; }
@@ -187,7 +232,7 @@
         .trans-table { width: 100%; border-collapse: collapse; }
         .trans-table thead { position: sticky; top: 0; z-index: 5; background: var(--bg-card); }
         .trans-table th {
-            padding: 10px 16px; font-size: 10px; font-weight: 600; letter-spacing: 2px;
+            padding: 10px 14px; font-size: 10px; font-weight: 600; letter-spacing: 2px;
             color: var(--text-muted); text-transform: uppercase;
             border-bottom: 1px solid var(--border); text-align: left;
         }
@@ -195,64 +240,100 @@
         .trans-row:hover { background: var(--bg-card); }
         .trans-row.translated .row-status { color: var(--success); }
         .trans-row.untranslated .row-status { color: var(--text-muted); }
-        .trans-row td { padding: 10px 16px; vertical-align: top; }
+        .trans-row td { padding: 10px 14px; vertical-align: top; }
 
-        .col-num { width: 48px; font-family: var(--font-mono); font-size: 11px; }
-        .col-key { width: 220px; }
+        .col-num { width: 40px; font-family: var(--font-mono); font-size: 11px; }
+        .col-key { width: 180px; }
         .key-tag {
             display: inline-block; background: var(--bg-input); border: 1px solid var(--border);
             border-radius: 2px; padding: 3px 8px; font-family: var(--font-mono); font-size: 11px;
-            color: var(--accent); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            color: var(--accent); max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
-        .col-original { color: var(--text-secondary); font-size: 13px; width: 30%; }
-        .col-translation { width: auto; }
+        .col-original { color: var(--text-secondary); font-size: 13px; }
+        .col-translation { }
 
         .trans-input {
             width: 100%; background: var(--bg-input); border: 1px solid var(--border);
-            color: var(--text-primary); border-radius: 3px; padding: 6px 10px;
-            font-size: 13px; outline: none; transition: border-color .15s, background .15s;
+            color: var(--text-primary); border-radius: 3px; padding: 8px 10px;
+            font-size: 14px; /* Prevents iOS zoom */ outline: none;
+            transition: border-color .15s, background .15s;
             font-family: var(--font-body);
+            -webkit-appearance: none;
         }
         .trans-input:focus { border-color: var(--accent); background: #1c1c2e; }
         .trans-input.has-value { border-color: var(--success); }
-
-        /* Read-only state */
         .trans-input[readonly] {
-            background: var(--bg-surface);
-            color: var(--text-muted);
-            border-color: var(--border);
-            cursor: not-allowed;
-            opacity: .6;
+            background: var(--bg-surface); color: var(--text-muted);
+            border-color: var(--border); cursor: not-allowed; opacity: .6;
         }
-        .trans-input[readonly]:focus {
-            border-color: var(--border);
+        .trans-input[readonly]:focus { border-color: var(--border); background: var(--bg-surface); }
+
+        /* ── MOBILE CARD VIEW ── */
+        .mobile-entry-card {
+            border-bottom: 1px solid var(--border);
+            padding: 12px 14px;
+            transition: background .1s;
+        }
+        .mobile-entry-card:hover { background: var(--bg-card); }
+        .mobile-card-meta {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+        }
+        .mobile-card-num {
+            font-family: var(--font-mono); font-size: 10px; color: var(--text-muted);
+            flex-shrink: 0; width: 22px;
+        }
+        .mobile-card-original {
+            font-size: 12px; color: var(--text-secondary);
+            margin-bottom: 7px; margin-left: 30px;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .mobile-card-input-wrap { margin-left: 30px; }
+
+        /* Section header row */
+        .section-header-row td {
+            padding: 6px 14px;
+            font-size: 10px; font-family: var(--font-display); letter-spacing: 2px;
+            color: var(--text-muted); text-transform: uppercase;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-surface);
+        }
+        .section-header-mobile {
+            padding: 6px 14px;
+            font-size: 10px; font-family: var(--font-display); letter-spacing: 2px;
+            color: var(--text-muted); text-transform: uppercase;
+            border-bottom: 1px solid var(--border);
             background: var(--bg-surface);
         }
 
-        /* Read-only banner shown in toolbar */
-        .ro-notice {
-            display: flex; align-items: center; gap: 8px;
-            background: rgba(255,107,53,.08);
-            border: 1px solid rgba(255,107,53,.35);
-            border-radius: 3px; padding: 5px 12px;
-            font-size: 11px; color: var(--accent2); font-weight: 500;
+        /* ── MOBILE BOTTOM ACTION BAR ── */
+        .mobile-action-bar {
+            display: none;
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 90;
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border);
+            height: var(--mobile-bar-h);
+            padding: 8px 16px;
+            gap: 8px; align-items: center;
         }
-        .ro-notice i { font-size: 13px; }
+        .mobile-action-bar .ig-btn { flex: 1; }
 
+        /* ── EMPTY STATES ── */
         .empty-state {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            height: 100%; gap: 12px; color: var(--text-muted);
+            height: 100%; gap: 12px; color: var(--text-muted); padding: 32px 16px; text-align: center;
         }
         .empty-state i { font-size: 48px; opacity: .3; }
         .empty-state p { font-size: 14px; margin: 0; }
         .empty-state small { font-size: 12px; opacity: .6; }
 
-        .toast-area { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+        /* ── TOAST ── */
+        .toast-area { position: fixed; bottom: 24px; right: 16px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; max-width: calc(100vw - 32px); }
         .ig-toast {
             background: var(--bg-card); border: 1px solid var(--border);
             border-left: 3px solid var(--accent); padding: 10px 16px; border-radius: 4px;
-            font-size: 13px; min-width: 240px; box-shadow: 0 4px 24px rgba(0,0,0,.5);
-            animation: toastIn .2s ease;
+            font-size: 13px; min-width: 200px; box-shadow: 0 4px 24px rgba(0,0,0,.5);
+            animation: toastIn .2s ease; word-break: break-word;
         }
         .ig-toast.success { border-left-color: var(--success); }
         .ig-toast.error   { border-left-color: var(--accent2); }
@@ -263,16 +344,74 @@
 
         * { scrollbar-width: thin; scrollbar-color: var(--border-glow) transparent; }
 
-        @media (max-width: 768px) {
+        /* ══════════════════════════════════════════════
+           RESPONSIVE BREAKPOINTS
+        ══════════════════════════════════════════════ */
+
+        /* ── Tablet (≤ 900px): collapse sidebar to drawer ── */
+        @media (max-width: 900px) {
             .app-body { grid-template-columns: 1fr; }
-            .sidebar  { display: none; }
+
+            .hamburger-btn { display: flex; }
+
+            /* Sidebar becomes a fixed drawer */
+            .sidebar {
+                position: fixed; top: 0; left: 0; bottom: 0; z-index: 200;
+                width: 300px; max-width: 85vw;
+                transform: translateX(-100%);
+                transition: transform .25s cubic-bezier(.4,0,.2,1);
+                border-right: 1px solid var(--border-glow);
+                box-shadow: 4px 0 32px rgba(0,0,0,.6);
+                padding-top: var(--header-h); /* Sit below header */
+            }
+            .sidebar.open { transform: translateX(0); }
+
+            .sidebar-close { display: block; }
+
+            /* Hide desktop sidebar actions (shown in mobile bottom bar instead) */
+            .sidebar-actions { display: none; }
+
+            .mobile-action-bar { display: flex; }
+
+            /* Extra bottom padding so table content isn't behind the bar */
+            .table-wrap { padding-bottom: var(--mobile-bar-h); }
         }
+
+        /* ── Mobile (≤ 600px): switch to card layout ── */
+        @media (max-width: 600px) {
+            .app-logo span { display: none; }
+
+            .toolbar {
+                padding: 8px 12px;
+                gap: 6px;
+            }
+
+            /* Stack search + filters */
+            .search-wrap { order: 1; min-width: 100%; }
+            .filter-group { order: 2; }
+            .row-count-label { order: 3; margin-left: auto; }
+            .ro-notice { order: 4; width: 100%; }
+
+            .desktop-table { display: none !important; }
+            .mobile-cards  { display: block !important; }
+
+            .toast-area { bottom: calc(var(--mobile-bar-h) + 12px); }
+        }
+
+        /* Desktop-only: hide mobile cards */
+        .mobile-cards { display: none; }
+
+        /* Sidebar actions — visible on desktop, hidden on mobile (shown in bottom bar) */
+        .sidebar-actions { }
     </style>
 </head>
 <body>
 
 <!-- HEADER -->
 <header class="app-header">
+    <button class="hamburger-btn" id="btnHamburger" aria-label="Open file list">
+        <i class="bi bi-list"></i>
+    </button>
     <div class="app-logo">Iron Giants <span>/ Translation Tool</span></div>
     <div class="header-badge">v1.0</div>
     <div class="header-stats">
@@ -281,7 +420,7 @@
         </div>
         <div class="stat-pill">
             <div class="stat-dot" id="statusDot"></div>
-            <span id="statusText">No file loaded</span>
+            <span id="statusText" style="display:none;" class="d-none d-sm-inline">No file loaded</span>
         </div>
     </div>
 </header>
@@ -290,10 +429,15 @@
 <div class="app-body">
 
     <!-- SIDEBAR -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
 
         <div class="sidebar-section">
-            <div class="sidebar-label"><i class="bi bi-folder2-open"></i> &nbsp;Lang Files</div>
+            <div class="sidebar-label sidebar-header-row">
+                <span><i class="bi bi-folder2-open"></i> &nbsp;Lang Files</span>
+                <button class="sidebar-close" id="btnCloseSidebar" aria-label="Close sidebar">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
             <div id="fileList">
                 <div style="color:var(--text-muted);font-size:12px;padding:6px 2px;">
                     Loading files from <code style="color:var(--accent)">LangFiles/</code>…
@@ -314,7 +458,7 @@
             </div>
         </div>
 
-        <div class="sidebar-section" style="margin-top:auto;">
+        <div class="sidebar-section sidebar-actions" style="margin-top:auto;">
             <div class="sidebar-label"><i class="bi bi-lightning"></i> &nbsp;Actions</div>
             <div style="display:flex;flex-direction:column;gap:6px;">
                 <button class="ig-btn ig-btn-success" id="btnExport" style="width:100%">
@@ -334,40 +478,49 @@
         <div class="toolbar">
             <div class="search-wrap">
                 <i class="bi bi-search"></i>
-                <input class="search-input" id="searchInput" placeholder="Search keys or strings…" />
+                <input class="search-input" id="searchInput" placeholder="Search keys or strings…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
             </div>
-            <button class="filter-btn active" data-filter="all">All</button>
-            <button class="filter-btn" data-filter="untranslated">Untranslated</button>
-            <button class="filter-btn" data-filter="translated">Translated</button>
+            <div class="filter-group">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="untranslated" id="filterUntranslated">Missing</button>
+                <button class="filter-btn" data-filter="translated" id="filterTranslated">Done</button>
+            </div>
             <div id="roNotice" class="ro-notice" style="display:none;">
                 <i class="bi bi-lock-fill"></i> Source file — editing disabled
             </div>
-            <div class="toolbar-spacer"></div>
-            <span style="font-size:11px;color:var(--text-muted);" id="rowCount">—</span>
+            <span class="row-count-label" id="rowCount">—</span>
         </div>
 
         <div class="table-wrap" id="tableWrap">
             <div class="empty-state">
                 <i class="bi bi-file-earmark-code"></i>
                 <p>Select a language file to begin</p>
-                <small>Files are loaded from the <code style="color:var(--accent)">LangFiles/</code> folder</small>
+                <small>Tap the menu icon or select a file from the sidebar</small>
             </div>
         </div>
 
     </main>
 </div>
 
+<!-- MOBILE BOTTOM ACTION BAR -->
+<div class="mobile-action-bar" id="mobileActionBar">
+    <button class="ig-btn ig-btn-success" id="btnExportMobile">
+        <i class="bi bi-download"></i> Export
+    </button>
+    <button class="ig-btn ig-btn-secondary" id="btnClearMobile">
+        <i class="bi bi-arrow-counterclockwise"></i> Clear
+    </button>
+</div>
+
 <!-- TOAST AREA -->
 <div class="toast-area" id="toastArea"></div>
 
-<!-- jQuery + Bootstrap JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 
 <script>
     // ══════════════════════════════════════════════════════════════════
-    // CONFIGURATION — add your INI filenames here, place files in LangFiles/
-    // Files matching READONLY_FILES will be view-only (no editing allowed).
+    // CONFIGURATION
     // ══════════════════════════════════════════════════════════════════
     const LANG_FILES = [
         "en_US.ini",
@@ -379,16 +532,11 @@
         "ru_RU.ini"
     ];
 
-    // Files whose translations cannot be edited
-    const READONLY_FILES = ["en_US.ini"];
-
-    // The source/reference language file
-    const ENGLISH_SOURCE = "en_US.ini";
+    const READONLY_FILES  = ["en_US.ini"];
+    const ENGLISH_SOURCE  = "en_US.ini";
 
     // ══════════════════════════════════════════════════════════════════
-    // HELPERS — translation validity
-    // Returns true only if the entry has a translation AND it differs
-    // from the English source value for the same key.
+    // HELPERS
     // ══════════════════════════════════════════════════════════════════
     function isEffectivelyTranslated(e) {
         if (!e.translated) return false;
@@ -397,18 +545,29 @@
         return true;
     }
 
+    function escHtml(str) {
+        return String(str)
+            .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+            .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+    function setStatus(msg, ok) {
+        $("#statusText").text(msg);
+        ok ? $("#statusDot").addClass("green") : $("#statusDot").removeClass("green");
+    }
+    function toast(html, type = "info") {
+        const $t = $(`<div class="ig-toast ${type}">${html}</div>`).appendTo("#toastArea");
+        setTimeout(() => $t.fadeOut(300, function(){ $(this).remove(); }), 3500);
+    }
+
+    // Is the viewport in mobile card mode?
+    function isMobileCards() { return window.innerWidth <= 600; }
+
     // ══════════════════════════════════════════════════════════════════
     // STATE
     // ══════════════════════════════════════════════════════════════════
     let state = {
-        activeFile: null,
-        sections:   [],
-        entries:    [],
-        meta:       {},
-        filter:     "all",
-        search:     "",
-        isReadonly: false,
-        englishMap: {},   // key → English value, used to detect untranslated entries
+        activeFile: null, sections: [], entries: [], meta: {},
+        filter: "all", search: "", isReadonly: false, englishMap: {}
     };
 
     // ══════════════════════════════════════════════════════════════════
@@ -421,13 +580,7 @@
 
         text.split(/\r?\n/).forEach(line => {
             const trimmed = line.trim();
-
-            // Preserve blank lines as spacer markers inside sections
-            if (!trimmed) {
-                currentSection.entries.push({ spacer: true });
-                return;
-            }
-
+            if (!trimmed) { currentSection.entries.push({ spacer: true }); return; }
             if (trimmed.startsWith(";") || trimmed.startsWith("#")) return;
 
             const sectionMatch = trimmed.match(/^\[(.+)\]$/);
@@ -439,7 +592,6 @@
 
             const eqIdx = trimmed.indexOf("=");
             if (eqIdx === -1) return;
-
             const key = trimmed.slice(0, eqIdx).trim();
             let val   = trimmed.slice(eqIdx + 1).trim();
             if ((val.startsWith('"') && val.endsWith('"')) ||
@@ -449,22 +601,17 @@
             currentSection.entries.push({ key, value: val });
         });
 
-        const flat = [];
-        let meta = {};
+        const flat = [], meta = {};
         sections.forEach(sec => {
             if (sec.name === "Meta") {
                 sec.entries.forEach(e => { if (!e.spacer) meta[e.key] = e.value; });
                 return;
             }
             sec.entries.forEach(e => {
-                if (e.spacer) {
-                    flat.push({ spacer: true, section: sec.name });
-                } else {
-                    flat.push({ key: e.key, value: e.value, section: sec.name, translated: e.key !== e.value ? e.value : "" });
-                }
+                if (e.spacer) { flat.push({ spacer: true, section: sec.name }); }
+                else { flat.push({ key: e.key, value: e.value, section: sec.name, translated: e.key !== e.value ? e.value : "" }); }
             });
         });
-
         return { sections, flat, meta };
     }
 
@@ -486,12 +633,24 @@
     }
 
     // ══════════════════════════════════════════════════════════════════
+    // SIDEBAR — mobile drawer toggle
+    // ══════════════════════════════════════════════════════════════════
+    function openSidebar() {
+        $("#sidebar").addClass("open");
+        $("body").css("overflow", "hidden");
+    }
+    function closeSidebar() {
+        $("#sidebar").removeClass("open");
+        $("body").css("overflow", "");
+    }
+
+    // ══════════════════════════════════════════════════════════════════
     // FILE LIST
     // ══════════════════════════════════════════════════════════════════
     function renderFileList() {
         const $list = $("#fileList").empty();
         if (!LANG_FILES.length) {
-            $list.html('<div style="color:var(--text-muted);font-size:12px;">No files configured.<br>Edit <code>LANG_FILES</code> in the script.</div>');
+            $list.html('<div style="color:var(--text-muted);font-size:12px;">No files configured.</div>');
             return;
         }
         LANG_FILES.forEach(fname => {
@@ -501,20 +660,18 @@
                     <i class="bi bi-file-code"></i>
                     <span class="file-name">${fname}</span>
                     ${isRo
-                ? `<span class="ro-icon" title="Read-only source file"><i class="bi bi-lock-fill"></i></span>`
+                ? `<span class="ro-icon" title="Read-only"><i class="bi bi-lock-fill"></i></span>`
                 : `<span class="file-count" data-file="${fname}"><i class="bi bi-arrow-repeat" style="font-size:10px;opacity:.5;"></i></span>`
             }
                 </div>
             `);
-            $item.on("click", () => loadFile(fname));
+            $item.on("click", () => { loadFile(fname); closeSidebar(); });
             $list.append($item);
         });
 
-        // Pre-load non-readonly files to show translation counts
         LANG_FILES.forEach(async fname => {
             if (READONLY_FILES.includes(fname)) return;
             try {
-                // Fetch English map for accurate count
                 let engMap = {};
                 try {
                     const engRes = await fetch(`LangFiles/${ENGLISH_SOURCE}`);
@@ -523,25 +680,18 @@
                         engFlat.forEach(e => { if (!e.spacer) engMap[e.key] = e.value; });
                     }
                 } catch(_) {}
-
                 const res = await fetch(`LangFiles/${fname}`);
                 if (!res.ok) throw new Error();
-                const text = await res.text();
-                const { flat } = parseIni(text);
+                const { flat } = parseIni(await res.text());
                 const total = flat.filter(e => !e.spacer).length;
                 const done  = flat.filter(e => {
-                    if (e.spacer) return false;
-                    if (!e.translated) return false;
+                    if (e.spacer || !e.translated) return false;
                     const engVal = engMap[e.key];
-                    if (engVal !== undefined && e.translated === engVal) return false;
-                    return true;
+                    return !(engVal !== undefined && e.translated === engVal);
                 }).length;
                 const cls = done === total && total > 0 ? "complete" : done > 0 ? "partial" : "empty";
-                $(`.file-count[data-file="${fname}"]`)
-                    .text(`${done}/${total}`)
-                    .removeClass("complete partial empty")
-                    .addClass(cls);
-            } catch(e) {
+                $(`.file-count[data-file="${fname}"]`).text(`${done}/${total}`).removeClass("complete partial empty").addClass(cls);
+            } catch(_) {
                 $(`.file-count[data-file="${fname}"]`).text("err").css("color","var(--accent2)");
             }
         });
@@ -550,61 +700,54 @@
     async function loadFile(fname) {
         $(".file-item").removeClass("active");
         $(`.file-item[data-file="${fname}"]`).addClass("active");
-        $("#statusText").text("Loading…");
-        $("#statusDot").removeClass("green");
+        setStatus("Loading…", false);
 
         try {
             const res = await fetch(`LangFiles/${fname}`);
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const text = await res.text();
-            const parsed = parseIni(text);
+            const parsed = parseIni(await res.text());
             state.activeFile = fname;
             state.sections   = parsed.sections;
             state.entries    = parsed.flat;
             state.meta       = parsed.meta;
             state.isReadonly = READONLY_FILES.includes(fname);
 
-            // Load English reference map for untranslated detection
             state.englishMap = {};
             if (!state.isReadonly && fname !== ENGLISH_SOURCE) {
                 try {
                     const engRes = await fetch(`LangFiles/${ENGLISH_SOURCE}`);
                     if (engRes.ok) {
-                        const engText = await engRes.text();
-                        const { flat: engFlat } = parseIni(engText);
-                        engFlat.forEach(e => { if (!e.spacer) state.englishMap[e.key] = e.value; });
+                        const { flat: ef } = parseIni(await engRes.text());
+                        ef.forEach(e => { if (!e.spacer) state.englishMap[e.key] = e.value; });
                     }
-                } catch(_) { /* silently ignore if English file unavailable */ }
+                } catch(_) {}
             }
 
-            // Show/hide read-only UI elements
             if (state.isReadonly) {
                 $("#readonlyBadge").show();
                 $("#roNotice").show();
-                $("#btnExport").prop("disabled", true);
-                $("#btnClear").prop("disabled", true);
-                $(".filter-btn[data-filter='untranslated']").hide();
-                $(".filter-btn[data-filter='translated']").hide();
+                $("#btnExport, #btnExportMobile").prop("disabled", true);
+                $("#btnClear, #btnClearMobile").prop("disabled", true);
+                $("#filterUntranslated, #filterTranslated").hide();
             } else {
                 $("#readonlyBadge").hide();
                 $("#roNotice").hide();
-                $("#btnExport").prop("disabled", false);
-                $("#btnClear").prop("disabled", false);
-                $(".filter-btn[data-filter='untranslated']").show();
-                $(".filter-btn[data-filter='translated']").show();
+                $("#btnExport, #btnExportMobile").prop("disabled", false);
+                $("#btnClear, #btnClearMobile").prop("disabled", false);
+                $("#filterUntranslated, #filterTranslated").show();
             }
 
-            const doneNow  = state.entries.filter(e => !e.spacer && isEffectivelyTranslated(e)).length;
-            const totalNow = state.entries.filter(e => !e.spacer).length;
+            const done = state.entries.filter(e => !e.spacer && isEffectivelyTranslated(e)).length;
+            const total = state.entries.filter(e => !e.spacer).length;
             if (!state.isReadonly) {
-                const cls = doneNow === totalNow && totalNow > 0 ? "complete" : doneNow > 0 ? "partial" : "empty";
-                $(`.file-count[data-file="${fname}"]`).text(`${doneNow}/${totalNow}`).removeClass("complete partial empty").addClass(cls);
+                const cls = done === total && total > 0 ? "complete" : done > 0 ? "partial" : "empty";
+                $(`.file-count[data-file="${fname}"]`).text(`${done}/${total}`).removeClass("complete partial empty").addClass(cls);
             }
 
             renderTable();
             updateProgress();
-            setStatus(`${fname} loaded${state.isReadonly ? " (read-only)" : ""}`, true);
-            toast(`Loaded <strong>${fname}</strong> — ${state.entries.filter(e => !e.spacer).length} strings${state.isReadonly ? " · <span style='color:var(--accent2)'>read-only</span>" : ""}`, state.isReadonly ? "info" : "success");
+            setStatus(`${fname}${state.isReadonly ? " (read-only)" : ""}`, true);
+            toast(`Loaded <strong>${fname}</strong> — ${total} strings${state.isReadonly ? " · <span style='color:var(--accent2)'>read-only</span>" : ""}`, state.isReadonly ? "info" : "success");
         } catch(err) {
             toast(`Failed to load <strong>${fname}</strong>: ${err.message}`, "error");
             setStatus("Load error", false);
@@ -612,7 +755,7 @@
     }
 
     // ══════════════════════════════════════════════════════════════════
-    // TABLE RENDER
+    // FILTER
     // ══════════════════════════════════════════════════════════════════
     function getVisible() {
         return state.entries.filter(e => {
@@ -627,10 +770,13 @@
         });
     }
 
+    // ══════════════════════════════════════════════════════════════════
+    // TABLE RENDER — desktop vs mobile card view
+    // ══════════════════════════════════════════════════════════════════
     function renderTable() {
         const $wrap = $("#tableWrap").empty();
         const visible = getVisible();
-        $("#rowCount").text(`${visible.length} / ${state.entries.length} strings`);
+        $("#rowCount").text(`${visible.length} / ${state.entries.filter(e=>!e.spacer).length}`);
 
         if (!state.entries.length) {
             $wrap.html('<div class="empty-state"><i class="bi bi-file-earmark-code"></i><p>Select a language file to begin</p></div>');
@@ -641,16 +787,29 @@
             return;
         }
 
+        if (isMobileCards()) {
+            renderMobileCards($wrap, visible);
+        } else {
+            renderDesktopTable($wrap, visible);
+        }
+    }
+
+    /* ─── Desktop table ─── */
+    function renderDesktopTable($wrap, visible) {
         const ro = state.isReadonly;
         let lastSection = null;
-        const $table = $(`<table class="trans-table"><thead><tr><th>#</th><th>Key</th><th>${ro ? "Value" : "Original"}</th>${ro ? "" : "<th>Translation</th>"}</tr></thead></table>`);
-        const $body  = $('<tbody>');
+        const $table = $(`<table class="trans-table desktop-table"><thead><tr>
+            <th>#</th><th>Key</th>
+            <th>${ro ? "Value" : "Original"}</th>
+            ${ro ? "" : "<th>Translation</th>"}
+        </tr></thead></table>`);
+        const $body = $('<tbody>');
         let rowNum = 1;
 
         visible.forEach(e => {
             if (e.section !== lastSection) {
                 const colspan = ro ? 3 : 4;
-                $body.append($(`<tr style="background:var(--bg-surface)"><td colspan="${colspan}" style="padding:6px 16px;font-size:10px;font-family:var(--font-display);letter-spacing:2px;color:var(--text-muted);text-transform:uppercase;border-bottom:1px solid var(--border);">[${e.section}]</td></tr>`));
+                $body.append(`<tr class="section-header-row"><td colspan="${colspan}">[${e.section}]</td></tr>`);
                 lastSection = e.section;
             }
 
@@ -658,60 +817,99 @@
             const $row = $(`<tr class="trans-row ${isEffectivelyTranslated(e) ? 'translated' : 'untranslated'}" data-idx="${entryIdx}"></tr>`);
 
             if (ro) {
-                // Read-only: show key + value only (no translation column)
                 $row.html(`
                     <td class="col-num row-status">${rowNum++}</td>
                     <td class="col-key"><span class="key-tag" title="${e.key}">${e.key}</span></td>
                     <td class="col-original" colspan="2" style="color:var(--text-primary);">${escHtml(e.value)}</td>
                 `);
             } else {
-                const effTranslated = isEffectivelyTranslated(e);
-                const sameAsEng     = e.translated && !effTranslated && state.englishMap[e.key] !== undefined && e.translated === state.englishMap[e.key];
-                const inputClass    = effTranslated ? 'has-value' : sameAsEng ? 'same-as-english' : '';
+                const eff = isEffectivelyTranslated(e);
+                const sameAsEng = e.translated && !eff && state.englishMap[e.key] !== undefined && e.translated === state.englishMap[e.key];
                 $row.html(`
                     <td class="col-num row-status">${rowNum++}</td>
                     <td class="col-key"><span class="key-tag" title="${e.key}">${e.key}</span></td>
                     <td class="col-original">${escHtml(e.value)}</td>
                     <td class="col-translation">
-                        <input class="trans-input ${inputClass}"
-                               type="text"
-                               value="${escHtml(e.translated)}"
+                        <input class="trans-input ${eff ? 'has-value' : ''}"
+                               type="text" value="${escHtml(e.translated)}"
                                placeholder="${escHtml(e.value)}"
                                data-idx="${entryIdx}" />
                     </td>
                 `);
             }
-
             $body.append($row);
         });
 
         $table.append($body);
         $wrap.append($table);
+        if (!ro) attachInputEvents($wrap);
+    }
 
-        if (!ro) {
-            $wrap.on("input", ".trans-input", function() {
-                const idx = +$(this).data("idx");
-                const val = $(this).val();
-                state.entries[idx].translated = val;
-                const e    = state.entries[idx];
-                const eff  = isEffectivelyTranslated(e);
-                const sameAsEng = val && !eff && state.englishMap[e.key] !== undefined && val === state.englishMap[e.key];
-                const $row = $(this).closest("tr");
+    /* ─── Mobile card view ─── */
+    function renderMobileCards($wrap, visible) {
+        const ro = state.isReadonly;
+        const $container = $('<div class="mobile-cards">');
+        let lastSection = null;
+        let rowNum = 1;
 
-                $(this).removeClass("has-value same-as-english");
-                if (eff)       $(this).addClass("has-value");
-                else if (sameAsEng) $(this).addClass("same-as-english");
+        visible.forEach(e => {
+            if (e.section !== lastSection) {
+                $container.append(`<div class="section-header-mobile">[${e.section}]</div>`);
+                lastSection = e.section;
+            }
 
-                if (eff) {
-                    $row.removeClass("untranslated").addClass("translated");
-                    $row.find(".row-status").css("color", "var(--success)");
-                } else {
-                    $row.removeClass("translated").addClass("untranslated");
-                    $row.find(".row-status").css("color", "var(--text-muted)");
-                }
-                updateProgress();
-            });
-        }
+            const entryIdx = state.entries.indexOf(e);
+            const eff = isEffectivelyTranslated(e);
+            const $card = $(`<div class="mobile-entry-card" data-idx="${entryIdx}">`);
+
+            $card.append(`
+                <div class="mobile-card-meta">
+                    <span class="mobile-card-num row-status" style="color:${eff ? 'var(--success)' : 'var(--text-muted)'}">${rowNum++}</span>
+                    <span class="key-tag" title="${e.key}">${e.key}</span>
+                </div>
+                <div class="mobile-card-original">${escHtml(e.value)}</div>
+            `);
+
+            if (!ro) {
+                $card.append(`
+                    <div class="mobile-card-input-wrap">
+                        <input class="trans-input ${eff ? 'has-value' : ''}"
+                               type="text" value="${escHtml(e.translated)}"
+                               placeholder="${escHtml(e.value)}"
+                               data-idx="${entryIdx}" />
+                    </div>
+                `);
+            }
+
+            $container.append($card);
+        });
+
+        $wrap.append($container);
+        if (!ro) attachInputEvents($wrap);
+    }
+
+    function attachInputEvents($wrap) {
+        $wrap.on("input", ".trans-input", function() {
+            const idx = +$(this).data("idx");
+            const val = $(this).val();
+            state.entries[idx].translated = val;
+            const e   = state.entries[idx];
+            const eff = isEffectivelyTranslated(e);
+
+            $(this).toggleClass("has-value", eff);
+
+            // Update row/card status dot
+            const $card = $(this).closest("[data-idx]");
+            $card.find(".row-status").css("color", eff ? "var(--success)" : "var(--text-muted)");
+
+            // Desktop table row class
+            const $row = $(this).closest("tr");
+            if ($row.length) {
+                $row.toggleClass("translated", eff).toggleClass("untranslated", !eff);
+            }
+
+            updateProgress();
+        });
     }
 
     // ══════════════════════════════════════════════════════════════════
@@ -738,31 +936,21 @@
         if (!state.entries.length) { toast("Nothing to export — load a file first", "error"); return; }
         if (state.isReadonly) { toast("This file is read-only and cannot be exported", "error"); return; }
         const code = state.activeFile ? state.activeFile.replace(".ini", "") : "xx_XX";
-        const content = serializeIni();
-        const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+        const blob = new Blob([serializeIni()], { type: "text/plain;charset=utf-8" });
         const url  = URL.createObjectURL(blob);
         const $a   = $('<a>').attr({ href: url, download: `${code}.ini` }).appendTo("body");
-        $a[0].click();
-        $a.remove();
+        $a[0].click(); $a.remove();
         URL.revokeObjectURL(url);
         toast(`Exported <strong>${code}.ini</strong>`, "success");
     }
 
-    // ══════════════════════════════════════════════════════════════════
-    // HELPERS
-    // ══════════════════════════════════════════════════════════════════
-    function escHtml(str) {
-        return String(str)
-            .replace(/&/g,"&amp;").replace(/</g,"&lt;")
-            .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-    }
-    function setStatus(msg, ok) {
-        $("#statusText").text(msg);
-        ok ? $("#statusDot").addClass("green") : $("#statusDot").removeClass("green");
-    }
-    function toast(html, type = "info") {
-        const $t = $(`<div class="ig-toast ${type}">${html}</div>`).appendTo("#toastArea");
-        setTimeout(() => $t.fadeOut(300, function(){ $(this).remove(); }), 3500);
+    function clearTranslations() {
+        if (!state.entries.length || state.isReadonly) return;
+        if (!confirm("Clear all translations in this file?")) return;
+        state.entries.forEach(e => { if (!e.spacer) e.translated = ""; });
+        renderTable();
+        updateProgress();
+        toast("Translations cleared", "info");
     }
 
     // ══════════════════════════════════════════════════════════════════
@@ -771,11 +959,17 @@
     $(function() {
         renderFileList();
 
+        // Hamburger
+        $("#btnHamburger").on("click", openSidebar);
+        $("#btnCloseSidebar").on("click", closeSidebar);
+
+        // Search
         $("#searchInput").on("input", function() {
             state.search = $(this).val().trim().toLowerCase();
             renderTable();
         });
 
+        // Filters
         $(".filter-btn").on("click", function() {
             $(".filter-btn").removeClass("active");
             $(this).addClass("active");
@@ -783,16 +977,15 @@
             renderTable();
         });
 
-        $("#btnExport").on("click", exportIni);
+        // Actions — desktop sidebar + mobile bar
+        $("#btnExport, #btnExportMobile").on("click", exportIni);
+        $("#btnClear, #btnClearMobile").on("click", clearTranslations);
 
-        $("#btnClear").on("click", function() {
-            if (!state.entries.length) return;
-            if (state.isReadonly) return;
-            if (!confirm("Clear all translations?")) return;
-            state.entries.forEach(e => e.translated = "");
-            renderTable();
-            updateProgress();
-            toast("Translations cleared", "info");
+        // Re-render table on resize (card/table mode switch)
+        let resizeTimer;
+        $(window).on("resize", function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => { if (state.entries.length) renderTable(); }, 150);
         });
     });
 </script>
