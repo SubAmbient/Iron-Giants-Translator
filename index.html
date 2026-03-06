@@ -413,7 +413,7 @@
         <i class="bi bi-list"></i>
     </button>
     <div class="app-logo">Iron Giants <span>/ Translation Tool</span></div>
-    <div class="header-badge">v1.0</div>
+    <div class="header-badge">v1.1</div>
     <div class="header-stats">
         <div id="readonlyBadge" class="readonly-badge" style="display:none;">
             <i class="bi bi-lock-fill"></i> Read-Only
@@ -983,10 +983,20 @@
         $("#btnClear, #btnClearMobile").on("click", clearTranslations);
 
         // Re-render table on resize (card/table mode switch)
+        // Only re-render when the layout MODE changes (≤600px vs >600px),
+        // NOT on every resize — prevents the Android soft keyboard from
+        // triggering a full re-render that destroys the focused input.
         let resizeTimer;
+        let lastMobileCards = isMobileCards();
         $(window).on("resize", function() {
             clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(() => { if (state.entries.length) renderTable(); }, 150);
+            resizeTimer = setTimeout(() => {
+                const nowMobile = isMobileCards();
+                if (nowMobile !== lastMobileCards) {
+                    lastMobileCards = nowMobile;
+                    if (state.entries.length) renderTable();
+                }
+            }, 150);
         });
     });
 </script>
