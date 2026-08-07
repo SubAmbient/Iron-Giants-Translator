@@ -43,11 +43,17 @@
         <div class="sidebar-section">
             <div class="sidebar-label sidebar-header-row">
                 <span><i class="bi bi-folder2-open"></i> &nbsp;Lang Files</span>
-                <button class="sidebar-close" id="btnCloseSidebar" aria-label="Close sidebar">
-                    <i class="bi bi-x"></i>
-                </button>
+                <div class="sidebar-header-actions">
+                    <button class="sidebar-icon-btn" id="btnUpload" type="button" title="Upload a .ini file from your device" aria-label="Upload .ini file">
+                        <i class="bi bi-upload"></i>
+                    </button>
+                    <button class="sidebar-close" id="btnCloseSidebar" aria-label="Close sidebar">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
             </div>
-            <div id="fileList">
+            <input type="file" id="fileUploadInput" accept=".ini" hidden>
+            <div id="fileList" class="file-drop-target">
                 <div style="color:var(--text-muted);font-size:12px;padding:6px 2px;">
                     Loading files from <code style="color:var(--accent)">LangFiles/</code>…
                 </div>

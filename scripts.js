@@ -54,6 +54,11 @@ let state = {
     filter: "all", search: "", isReadonly: false, englishMap: {}
 };
 
+// Files the user has loaded from their own device via the upload button
+// or drag-and-drop. Everything here lives only in browser memory (this
+// tab) — it's never sent anywhere. Keyed by filename -> raw .ini text.
+let uploadedFiles = {};
+
 // ══════════════════════════════════════════════════════════════════
 // INI PARSER
 // ══════════════════════════════════════════════════════════════════
@@ -167,9 +172,12 @@ function renderFileList() {
     }
     LANG_FILES.forEach(fname => {
         const isRo = READONLY_FILES.includes(fname);
+        const isUploaded = uploadedFiles[fname] !== undefined;
+        const icon = isUploaded ? "bi-cloud-check-fill uploaded-icon" : "bi-file-code";
+        const iconTitle = isUploaded ? ' title="Loaded from your device"' : "";
         const $item = $(`
                 <div class="file-item" data-file="${fname}">
-                    <i class="bi bi-file-code"></i>
+                    <i class="bi ${icon}"${iconTitle}></i>
                     <span class="file-name">${fname}</span>
                     ${isRo
             ? `<span class="ro-icon" title="Read-only"><i class="bi bi-lock-fill"></i></span>`
@@ -186,15 +194,27 @@ function renderFileList() {
         try {
             let engMap = {};
             try {
-                const engRes = await fetch(`LangFiles/${ENGLISH_SOURCE}`);
-                if (engRes.ok) {
-                    const { flat: engFlat } = parseIni(await engRes.text());
+                const engText = uploadedFiles[ENGLISH_SOURCE] !== undefined
+                    ? uploadedFiles[ENGLISH_SOURCE]
+                    : await (async () => {
+                        const engRes = await fetch(`LangFiles/${ENGLISH_SOURCE}`);
+                        return engRes.ok ? await engRes.text() : null;
+                    })();
+                if (engText) {
+                    const { flat: engFlat } = parseIni(engText);
                     engFlat.forEach(e => { if (!e.spacer) engMap[e.key] = e.value; });
                 }
             } catch(_) {}
-            const res = await fetch(`LangFiles/${fname}`);
-            if (!res.ok) throw new Error();
-            const { flat } = parseIni(await res.text());
+
+            let text;
+            if (uploadedFiles[fname] !== undefined) {
+                text = uploadedFiles[fname];
+            } else {
+                const res = await fetch(`LangFiles/${fname}`);
+                if (!res.ok) throw new Error();
+                text = await res.text();
+            }
+            const { flat } = parseIni(text);
             const total = flat.filter(e => !e.spacer).length;
             const done  = flat.filter(e => {
                 if (e.spacer || !e.translated) return false;
@@ -209,15 +229,49 @@ function renderFileList() {
     });
 }
 
+// ══════════════════════════════════════════════════════════════════
+// UPLOAD — load a .ini file straight from the user's device.
+// Everything here happens with the browser's File API; the file's
+// contents never leave the tab or get sent to any server.
+// ══════════════════════════════════════════════════════════════════
+function handleUploadedFile(file) {
+    if (!file) return;
+    if (!/\.ini$/i.test(file.name)) {
+        toast(`<strong>${escHtml(file.name)}</strong> doesn't look like a .ini file`, "error");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+        const fname = file.name;
+        const isNewFile = !LANG_FILES.includes(fname);
+        uploadedFiles[fname] = evt.target.result;
+        if (isNewFile) LANG_FILES.push(fname);
+
+        renderFileList();
+        loadFile(fname);
+        closeSidebar();
+        toast(`Loaded <strong>${escHtml(fname)}</strong> from your device`, "success");
+    };
+    reader.onerror = () => toast(`Couldn't read <strong>${escHtml(file.name)}</strong>`, "error");
+    reader.readAsText(file);
+}
+
 async function loadFile(fname) {
     $(".file-item").removeClass("active");
     $(`.file-item[data-file="${fname}"]`).addClass("active");
     setStatus("Loading…", false);
 
     try {
-        const res = await fetch(`LangFiles/${fname}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const parsed = parseIni(await res.text());
+        let text;
+        if (uploadedFiles[fname] !== undefined) {
+            text = uploadedFiles[fname];
+        } else {
+            const res = await fetch(`LangFiles/${fname}`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            text = await res.text();
+        }
+        const parsed = parseIni(text);
         state.activeFile = fname;
         state.sections   = parsed.sections;
         state.entries    = parsed.flat;
@@ -228,9 +282,15 @@ async function loadFile(fname) {
         state.englishMap = {};
         if (!state.isReadonly && fname !== ENGLISH_SOURCE) {
             try {
-                const engRes = await fetch(`LangFiles/${ENGLISH_SOURCE}`);
-                if (engRes.ok) {
-                    const { flat: ef } = parseIni(await engRes.text());
+                let engText;
+                if (uploadedFiles[ENGLISH_SOURCE] !== undefined) {
+                    engText = uploadedFiles[ENGLISH_SOURCE];
+                } else {
+                    const engRes = await fetch(`LangFiles/${ENGLISH_SOURCE}`);
+                    if (engRes.ok) engText = await engRes.text();
+                }
+                if (engText) {
+                    const { flat: ef } = parseIni(engText);
                     ef.forEach(e => { if (!e.spacer) state.englishMap[e.key] = e.value; });
                 }
             } catch(_) {}
@@ -476,6 +536,32 @@ $(function() {
     // Hamburger
     $("#btnHamburger").on("click", openSidebar);
     $("#btnCloseSidebar").on("click", closeSidebar);
+
+    // Upload — click to browse
+    $("#btnUpload").on("click", () => $("#fileUploadInput").trigger("click"));
+    $("#fileUploadInput").on("change", function() {
+        const file = this.files && this.files[0];
+        handleUploadedFile(file);
+        $(this).val(""); // reset so re-selecting the same file still fires "change"
+    });
+
+    // Upload — drag & drop onto the file list
+    const $fileList = $("#fileList");
+    $fileList.on("dragover", function(e) {
+        e.preventDefault();
+        $(this).addClass("drag-over");
+    });
+    $fileList.on("dragleave", function(e) {
+        e.preventDefault();
+        $(this).removeClass("drag-over");
+    });
+    $fileList.on("drop", function(e) {
+        e.preventDefault();
+        $(this).removeClass("drag-over");
+        const dt = e.originalEvent.dataTransfer;
+        const file = dt && dt.files && dt.files[0];
+        handleUploadedFile(file);
+    });
 
     // Search
     $("#searchInput").on("input", function() {

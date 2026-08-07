@@ -124,13 +124,35 @@ body::before {
     display: none;
     background: none; border: none; cursor: pointer;
     color: var(--text-muted); font-size: 20px; padding: 0;
-    line-height: 1; margin-left: auto;
+    line-height: 1;
     transition: color .15s;
 }
 .sidebar-close:hover { color: var(--text-primary); }
 
 .sidebar-header-row {
     display: flex; align-items: center;
+}
+
+.sidebar-header-actions {
+    margin-left: auto;
+    display: flex; align-items: center; gap: 4px;
+}
+
+.sidebar-icon-btn {
+    display: flex; align-items: center; justify-content: center;
+    background: none; border: 1px solid var(--border);
+    color: var(--text-secondary); border-radius: 3px;
+    width: 26px; height: 26px; padding: 0;
+    font-size: 12px; cursor: pointer;
+    transition: border-color .15s, color .15s;
+}
+.sidebar-icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+.file-drop-target { border-radius: 4px; transition: background .15s, outline-color .15s; }
+.file-drop-target.drag-over {
+    outline: 2px dashed var(--accent);
+    outline-offset: 3px;
+    background: var(--accent-dim);
 }
 
 .file-item {
@@ -144,6 +166,7 @@ body::before {
 .file-item:hover  { background: var(--bg-card); border-color: var(--border); color: var(--text-primary); }
 .file-item.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
 .file-item i { font-size: 13px; flex-shrink: 0; }
+.file-item i.uploaded-icon { color: var(--accent); }
 .file-item .file-name { font-size: 12px; font-family: var(--font-mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .file-item .file-count { margin-left: auto; font-size: 10px; flex-shrink: 0; color: var(--text-muted); }
 .file-item .file-count.complete { color: var(--success); }
