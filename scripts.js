@@ -17,7 +17,7 @@ const LANG_FILES = [
 
 const READONLY_FILES  = ["en_US.ini"];
 const ENGLISH_SOURCE  = "en_US.ini";
-const APP_VERSION     = "1.0.0";
+const APP_VERSION     = "1.2.0";
 
 // ══════════════════════════════════════════════════════════════════
 // HELPERS
@@ -50,7 +50,7 @@ function isMobileCards() { return window.innerWidth <= 600; }
 // STATE
 // ══════════════════════════════════════════════════════════════════
 let state = {
-    activeFile: null, sections: [], entries: [], meta: {},
+    activeFile: null, sections: [], entries: [], meta: {}, headerComments: [],
     filter: "all", search: "", isReadonly: false, englishMap: {}
 };
 
@@ -61,19 +61,26 @@ function parseIni(text) {
     const sections = [];
     let currentSection = { name: "General", entries: [] };
     sections.push(currentSection);
+    const headerComments = [];
+    let sectionsStarted = false;
 
     text.split(/\r?\n/).forEach(line => {
         const trimmed = line.trim();
         if (!trimmed) { currentSection.entries.push({ spacer: true }); return; }
-        if (trimmed.startsWith(";") || trimmed.startsWith("#")) return;
+        if (trimmed.startsWith(";") || trimmed.startsWith("#")) {
+            if (!sectionsStarted) headerComments.push(line);
+            return;
+        }
 
         const sectionMatch = trimmed.match(/^\[(.+)\]$/);
         if (sectionMatch) {
+            sectionsStarted = true;
             currentSection = { name: sectionMatch[1], entries: [] };
             sections.push(currentSection);
             return;
         }
 
+        sectionsStarted = true;
         const eqIdx = trimmed.indexOf("=");
         if (eqIdx === -1) return;
         const key = trimmed.slice(0, eqIdx).trim();
@@ -87,6 +94,10 @@ function parseIni(text) {
 
     const flat = [], meta = {};
     sections.forEach(sec => {
+        // "General" is only ever leading blank lines/comments before the first
+        // real [section] header — never real content, so it's dropped here
+        // rather than being carried into `flat` as a stray blank entry.
+        if (sec.name === "General") return;
         if (sec.name === "Meta") {
             sec.entries.forEach(e => { if (!e.spacer) meta[e.key] = e.value; });
             return;
@@ -96,7 +107,7 @@ function parseIni(text) {
             else { flat.push({ key: e.key, value: e.value, section: sec.name, translated: e.key !== e.value ? e.value : "" }); }
         });
     });
-    return { sections, flat, meta };
+    return { sections, flat, meta, headerComments };
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -108,18 +119,29 @@ function serializeIni() {
     const total = entries.length;
     const done  = entries.filter(isEffectivelyTranslated).length;
 
-    let out = `[Meta]\n`;
-    if (m.id)   out += `id="${m.id}"\n`;
-    if (m.name) out += `name="${m.name}"\n`;
-    if (m.flag) out += `flag="${m.flag}"\n`;
-    out += `progress="${done}/${total}"\n`;
-    if (m.semVer) out += `semVer="${m.semVer}"\n`;
-    out += `\n[Translations]\n`;
+    const lines = [];
+    if (state.headerComments && state.headerComments.length) {
+        lines.push(...state.headerComments, "");
+    }
+
+    lines.push(`[Meta]`);
+    if (m.id)   lines.push(`id="${m.id}"`);
+    if (m.name) lines.push(`name="${m.name}"`);
+    if (m.flag) lines.push(`flag="${m.flag}"`);
+    lines.push(`progress="${done}/${total}"`);
+    if (m.semVer) lines.push(`semVer="${m.semVer}"`);
+    lines.push("", `[Translations]`);
+
     state.entries.forEach(e => {
-        if (e.spacer) { out += `\n`; return; }
-        out += `${e.key}="${e.translated || e.value}"\n`;
+        if (e.spacer) { lines.push(""); return; }
+        lines.push(`${e.key}="${e.translated || e.value}"`);
     });
-    return out;
+
+    // Drop any trailing blank line(s) so the export doesn't end with
+    // dangling whitespace.
+    while (lines.length && lines[lines.length - 1] === "") lines.pop();
+
+    return lines.join("\n");
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -200,6 +222,7 @@ async function loadFile(fname) {
         state.sections   = parsed.sections;
         state.entries    = parsed.flat;
         state.meta       = parsed.meta;
+        state.headerComments = parsed.headerComments;
         state.isReadonly = READONLY_FILES.includes(fname);
 
         state.englishMap = {};
