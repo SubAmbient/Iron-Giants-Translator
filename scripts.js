@@ -17,6 +17,7 @@ const LANG_FILES = [
 
 const READONLY_FILES  = ["en_US.ini"];
 const ENGLISH_SOURCE  = "en_US.ini";
+const APP_VERSION     = "1.0.0";
 
 // ══════════════════════════════════════════════════════════════════
 // HELPERS
@@ -103,10 +104,16 @@ function parseIni(text) {
 // ══════════════════════════════════════════════════════════════════
 function serializeIni() {
     const m = state.meta;
+    const entries = state.entries.filter(e => !e.spacer);
+    const total = entries.length;
+    const done  = entries.filter(isEffectivelyTranslated).length;
+
     let out = `[Meta]\n`;
     if (m.id)   out += `id="${m.id}"\n`;
     if (m.name) out += `name="${m.name}"\n`;
     if (m.flag) out += `flag="${m.flag}"\n`;
+    out += `progress="${done}/${total}"\n`;
+    if (m.semVer) out += `semVer="${m.semVer}"\n`;
     out += `\n[Translations]\n`;
     state.entries.forEach(e => {
         if (e.spacer) { out += `\n`; return; }
@@ -440,6 +447,7 @@ function clearTranslations() {
 // EVENTS
 // ══════════════════════════════════════════════════════════════════
 $(function() {
+    $("#appVersionBadge").text(`v${APP_VERSION}`);
     renderFileList();
 
     // Hamburger
