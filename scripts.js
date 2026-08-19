@@ -18,7 +18,7 @@ const LANG_FILES = [
 
 const READONLY_FILES  = ["en_US.ini"];
 const ENGLISH_SOURCE  = "en_US.ini";
-const APP_VERSION     = "1.0.0";
+const APP_VERSION     = "1.0.1";
 
 // ══════════════════════════════════════════════════════════════════
 // HELPERS
