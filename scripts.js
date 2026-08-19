@@ -12,7 +12,8 @@ const LANG_FILES = [
     "fr_FR.ini",
     "de_DE.ini",
     "pt_BR.ini",
-    "pt_PT.ini"
+    "pt_PT.ini",
+    "ar_SA.ini"
 ];
 
 const READONLY_FILES  = ["en_US.ini"];
