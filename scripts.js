@@ -13,12 +13,13 @@ const LANG_FILES = [
     "de_DE.ini",
     "pt_BR.ini",
     "pt_PT.ini",
-    "ar_SA.ini"
+    "ar_SA.ini",
+    "vi_VN.ini"
 ];
 
 const READONLY_FILES  = ["en_US.ini"];
 const ENGLISH_SOURCE  = "en_US.ini";
-const APP_VERSION     = "1.0.1";
+const APP_VERSION     = "1.0.2";
 
 // ══════════════════════════════════════════════════════════════════
 // HELPERS
