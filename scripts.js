@@ -19,7 +19,7 @@ const LANG_FILES = [
 
 const READONLY_FILES  = ["en_US.ini"];
 const ENGLISH_SOURCE  = "en_US.ini";
-const APP_VERSION     = "1.0.2";
+const APP_VERSION     = "1.1.0";
 
 // ══════════════════════════════════════════════════════════════════
 // HELPERS
@@ -60,6 +60,10 @@ let state = {
 // or drag-and-drop. Everything here lives only in browser memory (this
 // tab) — it's never sent anywhere. Keyed by filename -> raw .ini text.
 let uploadedFiles = {};
+
+// The translator name(s) last typed in the sidebar. Kept while the tab is
+// open so it carries over when you switch to another language file.
+let sessionTranslators = "";
 
 // ══════════════════════════════════════════════════════════════════
 // INI PARSER
@@ -118,6 +122,36 @@ function parseIni(text) {
 }
 
 // ══════════════════════════════════════════════════════════════════
+// TRANSLATORS (Meta field)
+// ══════════════════════════════════════════════════════════════════
+// Values are written inside "quotes" in the .ini, so strip anything that
+// would break the line: newlines, and double quotes (swapped for apostrophes).
+function cleanTranslators(str) {
+    return String(str || "")
+        .replace(/[\r\n]+/g, " ")
+        .replace(/"/g, "'")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+// Push the loaded file's translators into the sidebar field.
+// Read-only files (the English source) show it but can't be edited.
+function syncTranslatorsField() {
+    const $in = $("#translatorsInput");
+    const loaded = !!state.activeFile;
+
+    // A file's own credits win. If it has none, carry over the name typed
+    // earlier this session so it doesn't need retyping for every file.
+    if (loaded && !state.isReadonly && !(state.meta.translators || "").trim() && sessionTranslators) {
+        state.meta.translators = sessionTranslators;
+    }
+
+    $in.val(state.meta.translators || "")
+        .prop("disabled", !loaded || state.isReadonly)
+        .toggleClass("has-value", !!(state.meta.translators || "").trim());
+}
+
+// ══════════════════════════════════════════════════════════════════
 // INI SERIALIZER
 // ══════════════════════════════════════════════════════════════════
 function serializeIni() {
@@ -135,6 +169,8 @@ function serializeIni() {
     if (m.id)   lines.push(`id="${m.id}"`);
     if (m.name) lines.push(`name="${m.name}"`);
     if (m.flag) lines.push(`flag="${m.flag}"`);
+    const translators = cleanTranslators(m.translators);
+    if (translators) lines.push(`translators="${translators}"`);
     lines.push(`progress="${done}/${total}"`);
     if (m.semVer) lines.push(`semVer="${m.semVer}"`);
     lines.push("", `[Translations]`);
@@ -319,6 +355,7 @@ async function loadFile(fname) {
             $(`.file-count[data-file="${fname}"]`).text(`${done}/${total}`).removeClass("complete partial empty").addClass(cls);
         }
 
+        syncTranslatorsField();
         renderTable();
         updateProgress();
         setStatus(`${fname}${state.isReadonly ? " (read-only)" : ""}`, true);
@@ -563,6 +600,14 @@ $(function() {
         const dt = e.originalEvent.dataTransfer;
         const file = dt && dt.files && dt.files[0];
         handleUploadedFile(file);
+    });
+
+    // Translators (Meta)
+    $("#translatorsInput").on("input", function() {
+        if (!state.activeFile || state.isReadonly) return;
+        state.meta.translators = $(this).val();
+        sessionTranslators = $(this).val();
+        $(this).toggleClass("has-value", !!$(this).val().trim());
     });
 
     // Search

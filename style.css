@@ -180,6 +180,23 @@ body::before {
 .progress-track { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
 .progress-bar-fill { height: 100%; background: var(--success); border-radius: 2px; transition: width .4s ease; box-shadow: 0 0 8px var(--success); }
 
+.translator-input {
+    width: 100%; background: var(--bg-input); border: 1px solid var(--border);
+    color: var(--text-primary); border-radius: 3px; padding: 8px 10px;
+    font-size: 14px; /* Prevents iOS zoom */ outline: none;
+    font-family: var(--font-body);
+    -webkit-appearance: none;
+    transition: border-color .15s, background .15s;
+}
+.translator-input:focus { border-color: var(--accent); background: #1c1c2e; }
+.translator-input.has-value { border-color: var(--success); }
+.translator-input::placeholder { color: var(--text-muted); }
+.translator-input:disabled {
+    background: var(--bg-surface); color: var(--text-muted);
+    cursor: not-allowed; opacity: .6;
+}
+.field-hint { margin-top: 6px; font-size: 11px; line-height: 1.4; color: var(--text-muted); }
+
 .ig-btn {
     display: inline-flex; align-items: center; justify-content: center; gap: 7px;
     padding: 10px 14px; border-radius: 3px; border: none; cursor: pointer;
